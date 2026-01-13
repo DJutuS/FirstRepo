@@ -1,5 +1,7 @@
-Display the Opprtunity Max Amount in the Corresponding Account Custom field (Highest Amount in Opportunity). and (Total Amount of Opportunity) in another custom field(Total oppportunity Amount)
+/**** Changes made in 1st line
 
+Display the Opprtunity Max Amount in the Corresponding Account Custom field (Highest Amount in Opportunity). and (Total Amount of Opportunity) in another custom field(Total oppportunity Amount)
+*/
 Trigger HighestAmountOpp_updateINAcc on Opportunity(after insert,after update,after Delete,after undelete)
 {
 set<id> aid=new set<id>();
@@ -104,4 +106,5 @@ update uptAcc;
 }
 }
 }
+
 }
