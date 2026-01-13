@@ -1,0 +1,107 @@
+Display the Opprtunity Max Amount in the Corresponding Account Custom field (Highest Amount in Opportunity). and (Total Amount of Opportunity) in another custom field(Total oppportunity Amount)
+
+Trigger HighestAmountOpp_updateINAcc on Opportunity(after insert,after update,after Delete,after undelete)
+{
+set<id> aid=new set<id>();
+ if(Trigger.isafter &&(Trigger.isInsert || Trigger.isUndelete))
+{
+ if(Trigger.new != null)
+{
+ for(Opportunity opp: Trigger.new)
+{
+ if(opp.AccountId != null)
+aid.add(opp.AccountId);
+}
+}
+}
+
+
+if(Trigger.isafter &&Trigger.isDelete)
+{
+ if(Trigger.old != null)
+{
+ for(Opportunity opp: Trigger.old)
+{
+if(opp.AccountId != null)
+aid.add(opp.AccountId);
+}
+}
+}
+
+if(Trigger.isafter && Trigger.isupdate)
+{
+ if(Trigger.new != null)
+{
+ for(Opportunity opp: Trigger.new)
+{
+ opportunity oldopp=Trigger.oldmap.get(opp.id);
+ if(opp.AccountId != null && oldopp.AccountId!=NULL && opp.Amount!=oldopp.Amount)
+{ 
+aid.add(opp.AccountId);
+aid.add(oldopp.AccountId);
+}
+}
+}
+}
+
+if(aid!=null)
+opphandler.method(aid);
+}
+
+
+public class opphander
+{
+ public static void method(set<id> aid)
+{
+List<Account> acclist=new List<Accoun>();
+acclist=[select id,Highest_OppAmount__c from Account where id in:aid];
+
+// Finding Max of all opportunity Amount for an Account
+map<id,Decimal> mapOppAMTtoACC=new map<id,Decimal>();
+for(AggregateResult agr:[Select max(Amount)MAXAMT,AccountId ACCID from opportunity where AccountId in:aid group by AccountId])
+{
+Id aid=(ID)agr.get('ACCID');
+decimal max_AMT=(decimal)agr.get('MAXAMT');
+mapOppAMTtoACC.put(aid,max_AMT);
+}
+
+// Finding Sum of all opportunity Amount for an Account
+map<id,Decimal> mapOppTotAMTtoACC=new map<id,Decimal>();
+for(AggregateResult agr:[Select sum(Amount)SUMAMT,AccountId ACCID from opportunity where AccountId in:aid group by AccountId])
+{
+Id aid=(ID)agr.get('ACCID');
+decimal sum_AMT=(decimal)agr.get('SUMAMT');
+mapOppTotAMTtoACC.put(aid,sum_AMT);
+}
+
+// Finding count of opportunities for an Account
+map<id,decimal> mapcountOpp=new map<id,decimal>();
+for(AggregateResult agr:[Select count(id)CNT,AccountId ACCID from opportunity where AccountId in:aid group by AccountId])
+{
+Id aid=(ID)agr.get('ACCID');
+decimal countOpp=(decimal)agr.get('CNT');
+mapOppTotAMTtoACC.put(aid,countOpp);
+}
+
+List<Account> uptAcc=new List<Account>();
+if(accList != null)
+{
+for(Account a: accList)
+{
+ Account acc=new Account();
+ acc.id=a.id;
+acc.Highest_OppAmount__c=mapOppAMTtoACC.get(a.id);
+acc.TotalOpportunityAmount__c=mapOppTotAMTtoACC.get(a.id);
+acc.CountofOpportunity__c=mapcountOpp.get(a.id);
+uptAcc.add(acc);
+}
+
+
+if(uptAcc != null)
+{
+system.debug('Account Updated with Highest-Opportunity-Amount and TotalAmount-for-opportunities');
+update uptAcc;
+}
+}
+}
+}
