@@ -4,7 +4,7 @@ Display the Opprtunity Max Amount in the Corresponding Account Custom field (Hig
 */
 Trigger HighestAmountOpp_updateINAcc on Opportunity(after insert,after update,after Delete,after undelete)
 {
-set<id> aid=new set<id>();
+set<id> accid=new set<id>();
  if(Trigger.isafter &&(Trigger.isInsert || Trigger.isUndelete))
 {
  if(Trigger.new != null)
@@ -12,7 +12,7 @@ set<id> aid=new set<id>();
  for(Opportunity opp: Trigger.new)
 {
  if(opp.AccountId != null)
-aid.add(opp.AccountId);
+accid.add(opp.AccountId);
 }
 }
 }
@@ -25,7 +25,7 @@ if(Trigger.isafter &&Trigger.isDelete)
  for(Opportunity opp: Trigger.old)
 {
 if(opp.AccountId != null)
-aid.add(opp.AccountId);
+accid.add(opp.AccountId);
 }
 }
 }
@@ -39,15 +39,15 @@ if(Trigger.isafter && Trigger.isupdate)
  opportunity oldopp=Trigger.oldmap.get(opp.id);
  if(opp.AccountId != null && oldopp.AccountId!=NULL && opp.Amount!=oldopp.Amount)
 { 
-aid.add(opp.AccountId);
-aid.add(oldopp.AccountId);
+accid.add(opp.AccountId);
+accid.add(oldopp.AccountId);
 }
 }
 }
 }
 
-if(aid!=null)
-opphandler.method(aid);
+if(accid!=null)
+opphandler.method(accid);
 }
 
 
